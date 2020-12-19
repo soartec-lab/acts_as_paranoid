@@ -2,6 +2,7 @@
 
 require "active_record"
 require "acts_as_paranoid/core"
+require "acts_as_paranoid/recover"
 require "acts_as_paranoid/associations"
 require "acts_as_paranoid/validations"
 require "acts_as_paranoid/relation"
@@ -25,6 +26,7 @@ module ActsAsParanoid
     return if paranoid?
 
     include ActsAsParanoid::Core
+    include ActsAsParanoid::Recover
 
     # Magic!
     default_scope { where(paranoid_default_scope) }

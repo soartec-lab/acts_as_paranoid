@@ -236,6 +236,46 @@ end
 # rubocop:enable Metrics/AbcSize
 # rubocop:enable Metrics/MethodLength
 
+def setup_recursive_tests
+  @paranoid_time_object = ParanoidTime.first
+
+  # Create one extra ParanoidHasManyDependant record so that we can validate
+  # the correct dependants are recovered.
+  ParanoidTime.where("id <> ?", @paranoid_time_object.id).first
+    .paranoid_has_many_dependants.create(name: "should not be recovered").destroy
+
+  @paranoid_boolean_count = ParanoidBoolean.count
+
+  assert_equal 0, ParanoidHasManyDependant.count
+  assert_equal 0, ParanoidBelongsDependant.count
+  assert_equal 1, NotParanoid.count
+
+  (1..3).each do |i|
+    has_many_object = @paranoid_time_object.paranoid_has_many_dependants
+      .create(name: "has_many_#{i}")
+    has_many_object.create_paranoid_belongs_dependant(name: "belongs_to_#{i}")
+    has_many_object.save
+
+    paranoid_boolean = @paranoid_time_object.paranoid_booleans
+      .create(name: "boolean_#{i}")
+    paranoid_boolean.create_paranoid_has_one_dependant(name: "has_one_#{i}")
+    paranoid_boolean.save
+
+    @paranoid_time_object.not_paranoids.create(name: "not_paranoid_a#{i}")
+  end
+
+  @paranoid_time_object.create_not_paranoid(name: "not_paranoid_belongs_to")
+  @paranoid_time_object.create_has_one_not_paranoid(name: "has_one_not_paranoid")
+
+  assert_equal 3, ParanoidTime.count
+  assert_equal 3, ParanoidHasManyDependant.count
+  assert_equal 3, ParanoidBelongsDependant.count
+  assert_equal @paranoid_boolean_count + 3, ParanoidBoolean.count
+  assert_equal 3, ParanoidHasOneDependant.count
+  assert_equal 5, NotParanoid.count
+  assert_equal 1, HasOneNotParanoid.count
+end
+
 def timestamps(table)
   table.column  :created_at, :timestamp, null: false
   table.column  :updated_at, :timestamp, null: false
