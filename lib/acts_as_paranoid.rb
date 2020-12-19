@@ -20,6 +20,27 @@ module ActsAsParanoid
       raise ArgumentError, "Hash expected, got #{options.class.name}"
     end
 
+    paranoid_configuration!(options)
+
+    return if paranoid?
+
+    include ActsAsParanoid::Core
+
+    # Magic!
+    default_scope { where(paranoid_default_scope) }
+
+    define_deleted_time_scopes if paranoid_column_type == :time
+  end
+
+  private
+
+  def paranoid_configuration!(options)
+    unless %w[time boolean string].include? paranoid_configuration[:column_type]
+      raise ArgumentError, "'time', 'boolean' or 'string' expected" \
+        " for :column_type option, got #{paranoid_configuration[:column_type]}"
+
+    end
+
     class_attribute :paranoid_configuration
 
     self.paranoid_configuration = {
@@ -39,20 +60,6 @@ module ActsAsParanoid
     end
 
     paranoid_configuration.merge!(options) # user options
-
-    unless %w[time boolean string].include? paranoid_configuration[:column_type]
-      raise ArgumentError, "'time', 'boolean' or 'string' expected" \
-        " for :column_type option, got #{paranoid_configuration[:column_type]}"
-    end
-
-    return if paranoid?
-
-    include ActsAsParanoid::Core
-
-    # Magic!
-    default_scope { where(paranoid_default_scope) }
-
-    define_deleted_time_scopes if paranoid_column_type == :time
   end
 end
 
