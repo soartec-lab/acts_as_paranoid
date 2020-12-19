@@ -38,7 +38,6 @@ module ActsAsParanoid
     unless %w[time boolean string].include? paranoid_configuration[:column_type]
       raise ArgumentError, "'time', 'boolean' or 'string' expected" \
         " for :column_type option, got #{paranoid_configuration[:column_type]}"
-
     end
 
     class_attribute :paranoid_configuration
