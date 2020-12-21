@@ -39,8 +39,6 @@ module ActsAsParanoid
       raise ArgumentError, "'time', 'boolean' or 'string' expected" \
         " for :column_type option, got #{paranoid_configuration[:column_type]}"
 
-    end
-
     class_attribute :paranoid_configuration
 
     self.paranoid_configuration = {
